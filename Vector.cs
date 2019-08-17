@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Vector
 {
-    public class Vector<T>: IEnumerable<T>
+    public class Vector<T> : IEnumerable<T>
     {
 
         // This constant determines the default number of elements in a newly created vector.
@@ -16,6 +15,8 @@ namespace Vector
         // In fact, all the elements are to be stored in this private  array. 
         // You will just write extra functionality (methods) to make the work with the array more convenient for the user.
         private T[] data;
+        private int currentIndex;
+        private T current = default(T);
 
         // This property represents the number of elements in the vector
         public int Count { get; private set; } = 0;
@@ -85,79 +86,63 @@ namespace Vector
         // TODO: Your task is to implement all the remaining methods.
         // Read the instruction carefully, study the code examples from above as they should help you to write the rest of the code.
 
+            //the IEnumerator<T> Interface supports a simple iteration over a generic collection.
         public IEnumerator<T> GetEnumerator()
         {
-            foreach (T item in data)
-            {
-                yield return item;
-            }
-            throw new NotImplementedException();
+            //create a return a new instance of the iterator.
+            return new ListEnumerator(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
-        public class ListEnumerator<T> : IEnumerator<T>
+        public class ListEnumerator : IEnumerator<T>
         {
-            private Vector<T> data; //collection
-            private int currentIndex;
-            private T Current;
-
-            T IEnumerator<T>.Current => throw new NotImplementedException();
-
-            object IEnumerator.Current => throw new NotImplementedException();
-
-            public ListEnumerator(Vector<T> data, int currentIndex)
+            //private fields
+            private Vector<T> _data;
+            private int curIndex;
+            private T current;
+            //constructor, passing in data so the Iterator can record it as a private reference to later use
+            public ListEnumerator(Vector<T> data)
             {
-                this.data = data;
-                currentIndex = -1;
-                Current = default (T);
+                _data = data;
+                curIndex = -1;
+                current = default(T);
             }
+            //advances the enumerator to the next element of the vector.
             public bool MoveNext()
             {
-                //Avoids going beyond the end of the collection. 
-                if (++currentIndex >= data.Count)
+                //Avoids going beyond the end of the Vector.
+                if (++curIndex >= _data.Count)
                 {
                     return false;
                 }
-                // Set current box to next item in collection.
-                Current = data[currentIndex];
+                else
+                {
+                    // Set current element to next item in Vector.
+                    current = _data[curIndex];
+                }
                 return true;
             }
-            public void Reset()
-            {
-                //throw new NotImplementedException();
-                currentIndex = -1;
-            }
+            //set the enumerator to its initial position, which is before the first element in the collection.
+            public void Reset() { curIndex = -1; }
+            //Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources
+            public void Dispose() { }
+            //because IEnumerator<T> is a generic interface, two properties must be defined
+            //**these can be generated in VS along with placeholder methods for the MoveNext, Reset, Dispose
+            //by implementomg interface
 
-            public void Dispose()
-            {
-
-            }
-        }
-
-            //public Boolean MoveNext()
-            //{
-            //    //Avoids going beyond the end of the Data. 
-            //    if (++_CurrentIndex >= _Data.Length)
-            //    {
-            //        return false;
-            //    }
-            //    // Set current box to next item in Data.
-            //    _Current = _Data[_CurrentIndex];
-            //
-            //    return true;
-            //}
-            //
-            //public void Reset() { _CurrentIndex = -1; }
-            //
-            //void IDisposable.Dispose() { }
-            //
+            
             public T Current
             {
-                get { return Current; }
+                get { return current; }
+            }
+            //necessary so the Iterator class is compatible with legacy code
+            object IEnumerator.Current
+            {
+                get { return current; }
             }
         }
-
     }
+}
